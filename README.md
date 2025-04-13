@@ -76,6 +76,7 @@ cd ../r-app
 docker build -t your-r-image:latest .
 ### `Build and Run Maven`
 mvn clean package
+
 mvn spring-boot:run
 
 The backend will be available at http://localhost:8080.
