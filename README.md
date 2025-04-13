@@ -52,8 +52,7 @@ This project demonstrates a full-stack application for generating interactive vi
 
 1. **Clone the Repository**  
    ```bash
-   git clone https://github.com/yourusername/interactive-visualization-generator.git
-   cd interactive-visualization-generator/backend
+   git clone https://github.com/SahithTirunahari/VisualizationGenerator.git
 
 
 ## Available Scripts
