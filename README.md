@@ -1,6 +1,60 @@
-# Getting Started with Create React App
+# Interactive Visualization Generator
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project demonstrates a full-stack application for generating interactive visualizations from user-supplied code using Docker containers. The application consists of:
+
+- **Spring Boot Backend:**  
+  Receives code and language choices from the frontend, writes the code to a temporary file, and runs a Docker container to execute that code.
+
+- **Python and R Docker Containers:**  
+  These containers execute external scripts (`your_script.py` for Python and `your_script.R` for R) that read the mounted user code and generate visualizations. The output mode (static, interactive, or 3d) is determined by a global variable `output_mode` set by the user code.  
+  - For Python:  
+    The external script supports both static matplotlib plots and interactive output (using Plotly, for example).
+  - For R:  
+    The external script supports static output (using ggplot2) or interactive output (using Plotly via `htmlwidgets`).
+
+- **React Frontend:**  
+  Provides a form where the user selects the language and output mode (static, interactive, or 3d) and enters their code. The frontend sends the request to the backend and renders the returned visualization accordingly. If interactive HTML is returned, it is rendered in an `<iframe>`.
+
+## Architecture Overview
+
+1. **Frontend (React):**
+   - User selects language (Python or R) and output mode.
+   - Code is entered (or pasted) into a text area.
+   - On submission, the frontend sends a POST request to the backend (`/launch-container`).
+
+2. **Backend (Spring Boot):**
+   - Receives payload with `language` and `code`.
+   - Writes user code into a temporary file.
+   - Invokes Docker run command to mount the file into the appropriate container.
+   - Executes the external script (either `your_script.py` or `your_script.R`) which processes the user code and generates the output visualization.
+   - Captures script output and returns it in a JSON response with the key `"visualization"`.
+
+3. **Docker Containers (Python & R):**
+   - **Python Container:**  
+     Runs a script (`your_script.py`) that executes the mounted code and produces either a static image (Base64 PNG) or interactive HTML using Plotly depending on `output_mode`.
+   - **R Container:**  
+     Runs a script (`your_script.R`) that reads and executes the mounted code, then produces a visualization using ggplot2 (static) or interactive Plotly output (via `htmlwidgets`) based on `output_mode`.
+
+## Prerequisites
+
+- **Docker:** Make sure Docker is installed and running.  
+  On macOS/Windows, ensure the directories for temporary file creation are added to Docker Desktop's File Sharing.
+  
+- **Java 11 or later:** For running the Spring Boot backend.
+  
+- **Maven:** For building the Spring Boot project.
+  
+- **Node.js and npm:** For running the React frontend.
+
+## Project Setup
+
+### Backend (Spring Boot)
+
+1. **Clone the Repository**  
+   ```bash
+   git clone https://github.com/yourusername/interactive-visualization-generator.git
+   cd interactive-visualization-generator/backend
+
 
 ## Available Scripts
 
@@ -14,57 +68,16 @@ Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 The page will reload when you make changes.\
 You may also see any lint errors in the console.
 
-### `npm test`
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### `Navigate to the Python App Folder:`
+cd ../python-app
+docker build -t your-python-image:latest .
+### `Navigate to the R App Folder:`
+cd ../r-app
+docker build -t your-r-image:latest .
+### `Build and Run Maven`
+mvn clean package
+mvn spring-boot:run
 
-### `npm run build`
+The backend will be available at http://localhost:8080.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
